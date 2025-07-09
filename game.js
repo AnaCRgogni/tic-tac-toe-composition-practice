@@ -1,45 +1,63 @@
-// const boardModule = function (dimension) {
+// Patron modular: Se declara una unica variable local que corresponde con el nombre del modulo. 
+// Contiene una funcion autoejecutable que devuelve un objeto con la funcionalidad que necesitamos. 
+// Variables internas son propiedades y las funciones son metodos. 
+// La funcion una vez autoiniciada, esta disponible en otras partes de la aplicacion. 
 
-//     function createBoard() {
+const BoardModule = (function () {
+    // Define el prototipo
 
-//     }
-
-//     const boardProto = {
-//         logMatrix (dimension) {
-//             const matrix = [];
-
-//             for (let i = 0; i < dimenssion; i++) {
-
-//             }
-
-//             return
-//         }
-//     }
-// }
-
-// const board = boardModule.createBoard();
-// console.log(board);
-
-
-
-
-function createBoard(dimension) {
-
-    let matrix = [];
-
-    for (let i = 0; i < dimension; i++) {
-        matrix[i] = [];
-        for (let j = 0; j < dimension; j++) {
-            matrix[i][j] = 'X' 
+    // La forma BoardModule.prototype.logBoard = ... se usa cuando se definen clases o funciones constructoras tradicionales 
+    // en JavaScript, no cuando se usa el patrón de módulo con IIFE y objetos literales.
+    const boardProto = {
+        logBoard() {
+            this.matrix.forEach(row => console.log(row));
         }
+    };
+
+    // Factory function para crear el board
+    function createBoard() {
+        let matrix = [];
+        for (let i = 0; i < 3; i++) {
+            matrix[i] = [];
+            for (let j = 0; j < 3; j++) {
+                matrix[i][j] = ' ';
+            }
+        }
+
+        // Crea el objeto board y le asigna el prototipo
+        const board = Object.create(boardProto);
+        board.matrix = matrix;
+        return board;
     }
 
-    return matrix; 
-}
+    // Expone solo la factory function, ejemplo de privacy 
+    return {
+        createBoard
+    };
+})();
 
-const board = createBoard(3);
-// Arrays are printed in 1 row, but I want it to be displayed as a grid
-board.forEach(row => console.log(row));
+const PlayerModule = (function () {
 
-// Can also use .table() which prints a table with each index
-console.table(createBoard(3));
+    const PlayerProto = {
+
+    };
+
+    return {
+
+    };
+})();
+
+const LogicModule = (function () {
+
+    const LogicProto = {
+
+    };
+
+    return {
+
+    };
+})();
+
+const myBoard = BoardModule.createBoard();
+// Este metodo esta disponible por prototipo, no por closures
+myBoard.logBoard(); 

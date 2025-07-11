@@ -38,18 +38,28 @@ const BoardModule = (function () {
 
 const PlayerModule = (function () {
 
-    const PlayerProto = {
-
+    const playerProto = {
+        logPlayer() {
+            console.log(`${this.playerType} has markers of the type: ${this.markerType} with a total counter of: ${this.markerCounter}`);
+        }
     };
 
-    return {
+    function createPLayer(playerType, markerType, markerCounter) {
+        const player = Object.create(playerProto);
+        player.playerType = playerType;
+        player.markerType = markerType;
+        player.markerCounter = markerCounter;
+        return player;
+    }
 
+    return {
+        createPLayer
     };
 })();
 
 const LogicModule = (function () {
 
-    const LogicProto = {
+    const logicProto = {
 
     };
 
@@ -57,6 +67,11 @@ const LogicModule = (function () {
 
     };
 })();
+
+const humanPlayer = PlayerModule.createPLayer('Human', 'O', 0);
+const machinePlayer = PlayerModule.createPLayer('Machine', 'X', 0);
+humanPlayer.logPlayer();
+machinePlayer.logPlayer();
 
 const myBoard = BoardModule.createBoard();
 // Este metodo esta disponible por prototipo, no por closures

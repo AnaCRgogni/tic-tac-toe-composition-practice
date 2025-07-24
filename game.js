@@ -68,7 +68,6 @@ const LogicModule = (function () {
         let i, j;
         do {
             i = parseInt(prompt('Escribe la fila (0-2):'));
-            // Si no es un numero, es menor que 0 o mayor que 2, siga pidiendo el prompt
         } while (isNaN(i) || i < 0 || i > 2);
 
         do {
@@ -78,16 +77,59 @@ const LogicModule = (function () {
         board.matrix[i][j] = player.markerType;
     }
 
-    function checkMatrixRows() {
-
+    function checkMatrixRows(board) {
+        for (let row = 0; row <= 2; row++) {
+            let playerMarkCounter = 0;
+            let emptyColumns = [];
+            for (let column = 0; column <= 2; column++) {
+                if (board.matrix[row][column] === 'O') {
+                    playerMarkCounter++;
+                } else if (board.matrix[row][column] === ' ') {
+                    emptyColumns.push(column);
+                }
+            }   
+        }
     }
 
-    function checkMatrixDiagonals() {
-        
+    function checkMatrixColumns(board) {
+        for (let col = 0; col <= 2; col++) {
+            let playerMarkCounter = 0;
+            let emptyRows = [];
+            for (let row = 0; row <= 2; row++) {
+                if (board.matrix[row][col] === 'O') {
+                    playerMarkCounter++;
+                } else if (board.matrix[row][col] === ' ') {
+                    emptyRows.push(row);
+                }
+            }
+        }
+    }
+
+    function checkMatrixDiagonals(board) {
+        // Diagonal principal: [0][0], [1][1], [2][2]
+        let mainDiagCounter = 0;
+        let mainDiagEmpty = [];
+        for (let i = 0; i <= 2; i++) {
+            if (board.matrix[i][i] === 'O') {
+                mainDiagCounter++;
+            } else if (board.matrix[i][i] === ' ') {
+                mainDiagEmpty.push(i);
+            }
+        }
+
+        // Diagonal secundaria: [0][2], [1][1], [2][0]
+        let secDiagCounter = 0;
+        let secDiagEmpty = [];
+        for (let i = 0; i <= 2; i++) {
+            if (board.matrix[i][2 - i] === 'O') {
+                secDiagCounter++;
+            } else if (board.matrix[i][2 - i] === ' ') {
+                secDiagEmpty.push(i);
+            }
+        }
     }
 
     function machineTurn(board, player) {
-        let i, j;
 
     }
 

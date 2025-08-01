@@ -12,6 +12,7 @@ const BoardModule = (function () {
         logBoard() {
             // Solo se usa 'this' dentro de métodos que están en el prototipo
             this.matrix.forEach(row => console.log(row));
+            console.log(''); // Agrega una línea vacía después de imprimir el tablero
         }
     };
 
@@ -74,10 +75,18 @@ const LogicModule = (function () {
             j = parseInt(prompt('Escribe la columna (0-2):'));
         } while (isNaN(j) || j < 0 || j > 2);
 
-        board.matrix[i][j] = player.markerType;
+        // Validación: solo permite marcar si el espacio está vacío
+        if (board.matrix[i][j] === ' ') {
+            board.matrix[i][j] = player.markerType;
+        } else {
+            alert('¡Ese espacio ya está ocupado! Elige otra posición.');
+            // Llama recursivamente hasta que elija un espacio válido
+            humanTurn(board, player);
+        }
     }
 
     function checkMatrixRows(board) {
+        let results = [];
         for (let row = 0; row <= 2; row++) {
             let playerMarkCounter = 0;
             let emptyColumns = [];
@@ -87,11 +96,14 @@ const LogicModule = (function () {
                 } else if (board.matrix[row][column] === ' ') {
                     emptyColumns.push(column);
                 }
-            }   
+            }
+            results.push({ row, playerMarkCounter, emptyColumns });
         }
+        return results;
     }
 
     function checkMatrixColumns(board) {
+        let results = [];
         for (let col = 0; col <= 2; col++) {
             let playerMarkCounter = 0;
             let emptyRows = [];
@@ -102,11 +114,13 @@ const LogicModule = (function () {
                     emptyRows.push(row);
                 }
             }
+            results.push({ col, playerMarkCounter, emptyRows });
         }
+        return results;
     }
 
     function checkMatrixDiagonals(board) {
-        // Diagonal principal: [0][0], [1][1], [2][2]
+        // Diagonal principal
         let mainDiagCounter = 0;
         let mainDiagEmpty = [];
         for (let i = 0; i <= 2; i++) {
@@ -117,7 +131,7 @@ const LogicModule = (function () {
             }
         }
 
-        // Diagonal secundaria: [0][2], [1][1], [2][0]
+        // Diagonal secundaria
         let secDiagCounter = 0;
         let secDiagEmpty = [];
         for (let i = 0; i <= 2; i++) {
@@ -127,20 +141,150 @@ const LogicModule = (function () {
                 secDiagEmpty.push(i);
             }
         }
+
+        return {
+            main: { playerMarkCounter: mainDiagCounter, emptyIndexes: mainDiagEmpty },
+            secondary: { playerMarkCounter: secDiagCounter, emptyIndexes: secDiagEmpty }
+        };
     }
 
     function machineTurn(board, player) {
+        // 1. Analiza filas
+        const rowResults = checkMatrixRows(board);
+        for (let result of rowResults) {
+            if (result.playerMarkCounter === 2 && result.emptyColumns.length === 1) {
+                // Bloquea en la fila
+                const row = result.row;
+                const col = result.emptyColumns[0];
+                board.matrix[row][col] = player.markerType;
+                return;
+            }
+        }
 
+        // 2. Analiza columnas
+        const colResults = checkMatrixColumns(board);
+        for (let result of colResults) {
+            if (result.playerMarkCounter === 2 && result.emptyRows.length === 1) {
+                // Bloquea en la columna
+                const row = result.emptyRows[0];
+                const col = result.col;
+                board.matrix[row][col] = player.markerType;
+                return;
+            }
+        }
+
+        // 3. Analiza diagonales
+        const diagResults = checkMatrixDiagonals(board);
+        // Diagonal principal
+        if (diagResults.main.playerMarkCounter === 2 && diagResults.main.emptyIndexes.length === 1) {
+            const i = diagResults.main.emptyIndexes[0];
+            board.matrix[i][i] = player.markerType;
+            return;
+        }
+        // Diagonal secundaria
+        if (diagResults.secondary.playerMarkCounter === 2 && diagResults.secondary.emptyIndexes.length === 1) {
+            const i = diagResults.secondary.emptyIndexes[0];
+            board.matrix[i][2 - i] = player.markerType;
+            return;
+        }
+
+        // 4. Si no hay que bloquear, elige un campo vacío aleatorio
+        let emptyCells = [];
+        for (let row = 0; row <= 2; row++) {
+            for (let col = 0; col <= 2; col++) {
+                if (board.matrix[row][col] === ' ') {
+                    emptyCells.push([row, col]);
+                }
+            }
+        }
+        if (emptyCells.length > 0) {
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            const [row, col] = emptyCells[randomIndex];
+            board.matrix[row][col] = player.markerType;
+        }
     }
 
-    function checkWinner() {
+    function checkWinner(board) {
+        // Checa filas
+        for (let row = 0; row <= 2; row++) {
+            if (
+                board.matrix[row][0] !== ' ' &&
+                board.matrix[row][0] === board.matrix[row][1] &&
+                board.matrix[row][1] === board.matrix[row][2]
+            ) {
+                const winnerMarker = board.matrix[row][0];
+                const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
+                alert(`¡${winnerName} gana por fila!`);
+                restartGame();
+                return winnerName;
+            }
+        }
+        // Checa columnas
+        for (let col = 0; col <= 2; col++) {
+            if (
+                board.matrix[0][col] !== ' ' &&
+                board.matrix[0][col] === board.matrix[1][col] &&
+                board.matrix[1][col] === board.matrix[2][col]
+            ) {
+                const winnerMarker = board.matrix[0][col];
+                const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
+                alert(`¡${winnerName} gana por columna!`);
+                restartGame();
+                return winnerName;
+            }
+        }
+        // Checa diagonal principal
+        if (
+            board.matrix[0][0] !== ' ' &&
+            board.matrix[0][0] === board.matrix[1][1] &&
+            board.matrix[1][1] === board.matrix[2][2]
+        ) {
+            const winnerMarker = board.matrix[0][0];
+            const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
+            alert(`¡${winnerName} gana por diagonal!`);
+            restartGame();
+            return winnerName;
+        }
+        // Checa diagonal secundaria
+        if (
+            board.matrix[0][2] !== ' ' &&
+            board.matrix[0][2] === board.matrix[1][1] &&
+            board.matrix[1][1] === board.matrix[2][0]
+        ) {
+            const winnerMarker = board.matrix[0][2];
+            const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
+            alert(`¡${winnerName} gana por diagonal!`);
+            restartGame();
+            return winnerName;
+        }
+        // Checa empate
+        let isDraw = true;
+        for (let row = 0; row <= 2; row++) {
+            for (let col = 0; col <= 2; col++) {
+                if (board.matrix[row][col] === ' ') {
+                    isDraw = false;
+                }
+            }
+        }
+        if (isDraw) {
+            alert('¡Empate!');
+            restartGame();
+            return 'draw';
+        }
+        // Si no hay ganador ni empate
+        return null;
+    }
 
+    // Reinicia el tablero y vuelve a empezar
+    function restartGame() {
+        if (confirm('¿Quieres jugar de nuevo?')) {
+            location.reload();
+        }
     }
 
     return {
         humanTurn,
         machineTurn,
-        checkMarkCount,
         checkWinner
     };
 })();
@@ -151,9 +295,15 @@ humanPlayer.logPlayer();
 machinePlayer.logPlayer();
 
 const myBoard = BoardModule.createBoard();
-// Este metodo esta disponible por prototipo, no por closures
 myBoard.logBoard(); 
 
-LogicModule.humanTurn(myBoard, humanPlayer);
-myBoard.logBoard();
-LogicModule.machineTurn(myBoard, machinePlayer);
+// Bucle de turnos hasta que haya ganador o empate
+while (true) {
+    LogicModule.humanTurn(myBoard, humanPlayer);
+    myBoard.logBoard();
+    if (LogicModule.checkWinner(myBoard)) break;
+
+    LogicModule.machineTurn(myBoard, machinePlayer);
+    myBoard.logBoard();
+    if (LogicModule.checkWinner(myBoard)) break;
+}

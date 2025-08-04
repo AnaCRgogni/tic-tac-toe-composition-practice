@@ -12,7 +12,7 @@ const BoardModule = (function () {
         logBoard() {
             // Solo se usa 'this' dentro de métodos que están en el prototipo
             this.matrix.forEach(row => console.log(row));
-            console.log(''); // Agrega una línea vacía después de imprimir el tablero
+            console.log('');
         }
     };
 
@@ -26,8 +26,6 @@ const BoardModule = (function () {
                 matrix[i][j] = ' ';
             }
         }
-
-        // Crea el objeto board y le asigna el prototipo
         const board = Object.create(boardProto);
         board.matrix = matrix;
         // board is the object and matrix is a property inside of it
@@ -41,7 +39,6 @@ const BoardModule = (function () {
 })();
 
 const PlayerModule = (function () {
-
     const playerProto = {
         logPlayer() {
             console.log(`${this.playerType} has markers of the type: ${this.markerType} with a total counter of: ${this.markerCounter}`);
@@ -62,29 +59,6 @@ const PlayerModule = (function () {
 })();
 
 const LogicModule = (function () {
-
-    // No crea objetos por lo que no necesita un prototipo
-
-    function humanTurn(board, player) {
-        let i, j;
-        do {
-            i = parseInt(prompt('Escribe la fila (0-2):'));
-        } while (isNaN(i) || i < 0 || i > 2);
-
-        do {
-            j = parseInt(prompt('Escribe la columna (0-2):'));
-        } while (isNaN(j) || j < 0 || j > 2);
-
-        // Validación: solo permite marcar si el espacio está vacío
-        if (board.matrix[i][j] === ' ') {
-            board.matrix[i][j] = player.markerType;
-        } else {
-            alert('¡Ese espacio ya está ocupado! Elige otra posición.');
-            // Llama recursivamente hasta que elija un espacio válido
-            humanTurn(board, player);
-        }
-    }
-
     function checkMatrixRows(board) {
         let results = [];
         for (let row = 0; row <= 2; row++) {
@@ -141,7 +115,6 @@ const LogicModule = (function () {
                 secDiagEmpty.push(i);
             }
         }
-
         return {
             main: { playerMarkCounter: mainDiagCounter, emptyIndexes: mainDiagEmpty },
             secondary: { playerMarkCounter: secDiagCounter, emptyIndexes: secDiagEmpty }
@@ -214,8 +187,6 @@ const LogicModule = (function () {
             ) {
                 const winnerMarker = board.matrix[row][0];
                 const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
-                alert(`¡${winnerName} gana por fila!`);
-                restartGame();
                 return winnerName;
             }
         }
@@ -228,8 +199,6 @@ const LogicModule = (function () {
             ) {
                 const winnerMarker = board.matrix[0][col];
                 const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
-                alert(`¡${winnerName} gana por columna!`);
-                restartGame();
                 return winnerName;
             }
         }
@@ -241,8 +210,6 @@ const LogicModule = (function () {
         ) {
             const winnerMarker = board.matrix[0][0];
             const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
-            alert(`¡${winnerName} gana por diagonal!`);
-            restartGame();
             return winnerName;
         }
         // Checa diagonal secundaria
@@ -253,8 +220,6 @@ const LogicModule = (function () {
         ) {
             const winnerMarker = board.matrix[0][2];
             const winnerName = winnerMarker === humanPlayer.markerType ? humanPlayer.playerType : machinePlayer.playerType;
-            alert(`¡${winnerName} gana por diagonal!`);
-            restartGame();
             return winnerName;
         }
         // Checa empate
@@ -267,23 +232,13 @@ const LogicModule = (function () {
             }
         }
         if (isDraw) {
-            alert('¡Empate!');
-            restartGame();
             return 'draw';
         }
         // Si no hay ganador ni empate
         return null;
     }
 
-    // Reinicia el tablero y vuelve a empezar
-    function restartGame() {
-        if (confirm('¿Quieres jugar de nuevo?')) {
-            location.reload();
-        }
-    }
-
     return {
-        humanTurn,
         machineTurn,
         checkWinner
     };
@@ -297,13 +252,76 @@ machinePlayer.logPlayer();
 const myBoard = BoardModule.createBoard();
 myBoard.logBoard(); 
 
-// Bucle de turnos hasta que haya ganador o empate
-while (true) {
-    LogicModule.humanTurn(myBoard, humanPlayer);
-    myBoard.logBoard();
-    if (LogicModule.checkWinner(myBoard)) break;
+const UIModule = (function () {
+    const boardDiv = document.getElementById('game-board');
+    const messageDiv = document.getElementById('message');
+    const restartBtn = document.getElementById('restart-btn');
 
-    LogicModule.machineTurn(myBoard, machinePlayer);
-    myBoard.logBoard();
-    if (LogicModule.checkWinner(myBoard)) break;
-}
+    function renderBoard(board) {
+        boardDiv.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.row = i;
+                cell.dataset.col = j;
+                cell.textContent = board.matrix[i][j];
+                cell.addEventListener('click', onCellClick);
+                boardDiv.appendChild(cell);
+            }
+        }
+    }
+
+    function onCellClick(e) {
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+        if (myBoard.matrix[row][col] !== ' ') return;
+
+        myBoard.matrix[row][col] = humanPlayer.markerType;
+        renderBoard(myBoard);
+
+        let winner = LogicModule.checkWinner(myBoard);
+        if (winner) {
+            endGame(winner);
+            return;
+        }
+
+        LogicModule.machineTurn(myBoard, machinePlayer);
+        renderBoard(myBoard);
+
+        winner = LogicModule.checkWinner(myBoard);
+        if (winner) {
+            endGame(winner);
+        }
+    }
+
+    function endGame(winner) {
+        if (winner === 'draw') {
+            messageDiv.textContent = 'Draw!';
+        } else {
+            messageDiv.textContent = `${winner} wins!`;
+        }
+        Array.from(document.getElementsByClassName('cell')).forEach(cell => {
+            cell.removeEventListener('click', onCellClick);
+        });
+        restartBtn.style.display = 'inline-block';
+    }
+
+    restartBtn.addEventListener('click', () => {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                myBoard.matrix[i][j] = ' ';
+            }
+        }
+        messageDiv.textContent = '';
+        restartBtn.style.display = 'none';
+        renderBoard(myBoard);
+    });
+
+    return {
+        renderBoard
+    };
+})();
+
+UIModule.renderBoard(myBoard);
+document.getElementById('message').textContent = 'Your turn. Click on a cell.';

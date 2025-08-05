@@ -122,49 +122,110 @@ const LogicModule = (function () {
     }
 
     function machineTurn(board, player) {
-        // 1. Analiza filas
-        const rowResults = checkMatrixRows(board);
-        for (let result of rowResults) {
-            if (result.playerMarkCounter === 2 && result.emptyColumns.length === 1) {
-                // Bloquea en la fila
-                const row = result.row;
-                const col = result.emptyColumns[0];
-                board.matrix[row][col] = player.markerType;
+        // 1. Intentar ganar (buscar dos 'X' y un espacio)
+        // Filas
+        for (let row = 0; row < 3; row++) {
+            let count = 0, empty = -1;
+            for (let col = 0; col < 3; col++) {
+                if (board.matrix[row][col] === player.markerType) count++;
+                else if (board.matrix[row][col] === ' ') empty = col;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[row][empty] = player.markerType;
                 return;
             }
         }
-
-        // 2. Analiza columnas
-        const colResults = checkMatrixColumns(board);
-        for (let result of colResults) {
-            if (result.playerMarkCounter === 2 && result.emptyRows.length === 1) {
-                // Bloquea en la columna
-                const row = result.emptyRows[0];
-                const col = result.col;
-                board.matrix[row][col] = player.markerType;
+        // Columnas
+        for (let col = 0; col < 3; col++) {
+            let count = 0, empty = -1;
+            for (let row = 0; row < 3; row++) {
+                if (board.matrix[row][col] === player.markerType) count++;
+                else if (board.matrix[row][col] === ' ') empty = row;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[empty][col] = player.markerType;
                 return;
             }
         }
-
-        // 3. Analiza diagonales
-        const diagResults = checkMatrixDiagonals(board);
         // Diagonal principal
-        if (diagResults.main.playerMarkCounter === 2 && diagResults.main.emptyIndexes.length === 1) {
-            const i = diagResults.main.emptyIndexes[0];
-            board.matrix[i][i] = player.markerType;
-            return;
+        {
+            let count = 0, empty = -1;
+            for (let i = 0; i < 3; i++) {
+                if (board.matrix[i][i] === player.markerType) count++;
+                else if (board.matrix[i][i] === ' ') empty = i;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[empty][empty] = player.markerType;
+                return;
+            }
         }
         // Diagonal secundaria
-        if (diagResults.secondary.playerMarkCounter === 2 && diagResults.secondary.emptyIndexes.length === 1) {
-            const i = diagResults.secondary.emptyIndexes[0];
-            board.matrix[i][2 - i] = player.markerType;
-            return;
+        {
+            let count = 0, empty = -1;
+            for (let i = 0; i < 3; i++) {
+                if (board.matrix[i][2 - i] === player.markerType) count++;
+                else if (board.matrix[i][2 - i] === ' ') empty = i;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[empty][2 - empty] = player.markerType;
+                return;
+            }
         }
 
-        // 4. Si no hay que bloquear, elige un campo vacío aleatorio
+        // 2. Bloquear al humano (buscar dos 'O' y un espacio)
+        // Filas
+        for (let row = 0; row < 3; row++) {
+            let count = 0, empty = -1;
+            for (let col = 0; col < 3; col++) {
+                if (board.matrix[row][col] === humanPlayer.markerType) count++;
+                else if (board.matrix[row][col] === ' ') empty = col;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[row][empty] = player.markerType;
+                return;
+            }
+        }
+        // Columnas
+        for (let col = 0; col < 3; col++) {
+            let count = 0, empty = -1;
+            for (let row = 0; row < 3; row++) {
+                if (board.matrix[row][col] === humanPlayer.markerType) count++;
+                else if (board.matrix[row][col] === ' ') empty = row;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[empty][col] = player.markerType;
+                return;
+            }
+        }
+        // Diagonal principal
+        {
+            let count = 0, empty = -1;
+            for (let i = 0; i < 3; i++) {
+                if (board.matrix[i][i] === humanPlayer.markerType) count++;
+                else if (board.matrix[i][i] === ' ') empty = i;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[empty][empty] = player.markerType;
+                return;
+            }
+        }
+        // Diagonal secundaria
+        {
+            let count = 0, empty = -1;
+            for (let i = 0; i < 3; i++) {
+                if (board.matrix[i][2 - i] === humanPlayer.markerType) count++;
+                else if (board.matrix[i][2 - i] === ' ') empty = i;
+            }
+            if (count === 2 && empty !== -1) {
+                board.matrix[empty][2 - empty] = player.markerType;
+                return;
+            }
+        }
+
+        // 3. Si no hay jugada ganadora ni bloqueo, elige un campo vacío aleatorio
         let emptyCells = [];
-        for (let row = 0; row <= 2; row++) {
-            for (let col = 0; col <= 2; col++) {
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
                 if (board.matrix[row][col] === ' ') {
                     emptyCells.push([row, col]);
                 }
@@ -265,7 +326,14 @@ const UIModule = (function () {
                 cell.className = 'cell';
                 cell.dataset.row = i;
                 cell.dataset.col = j;
-                cell.textContent = board.matrix[i][j];
+                cell.textContent = ''; // Limpia texto
+                if (board.matrix[i][j] === 'O') {
+                    cell.setAttribute('data-emoji', '🟢');
+                } else if (board.matrix[i][j] === 'X') {
+                    cell.setAttribute('data-emoji', '🍋');
+                } else {
+                    cell.setAttribute('data-emoji', '');
+                }
                 cell.addEventListener('click', onCellClick);
                 boardDiv.appendChild(cell);
             }
@@ -297,7 +365,7 @@ const UIModule = (function () {
 
     function endGame(winner) {
         if (winner === 'draw') {
-            messageDiv.textContent = 'Draw!';
+            messageDiv.textContent = "It's a draw!";
         } else {
             messageDiv.textContent = `${winner} wins!`;
         }

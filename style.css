@@ -1,37 +1,129 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f4f4f4;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Quicksand:wght@500&display=swap');
+
+:root {
+    --font-main: 'Quicksand', Arial, sans-serif;
+    --font-title: 'Montserrat', Arial, sans-serif;
+    --color-bg-gradient: linear-gradient(135deg, #a8ffeb 0%, #faffd1 100%);
+    --color-board-gradient: linear-gradient(135deg, #b2f7ef 0%, #e0ffb3 100%);
+    --color-cell-gradient: linear-gradient(135deg, #e0ffb3 0%, #a8ffeb 100%);
+    --color-cell-hover: linear-gradient(135deg, #b2f7ef 0%, #faffd1 100%);
+    --color-green-dark: #1b5e20;
+    --color-green: #388e3c;
+    --color-green-light: #b2f7ef;
+    --color-yellow-green: #e0ffb3;
+    --color-shadow: #b2f7ef60;
+    --color-shadow-board: #1b5e2020;
+    --color-shadow-title: #b2f7ef80;
+    --color-shadow-message: #e0ffb380;
+    --radius-board: 18px;
+    --radius-cell: 16px;
+    --radius-btn: 24px;
+    --cell-size: 90px;
+    --gap-board: 12px;
+    --padding-board: 18px;
+    --font-size-title: 2.8rem;
+    --font-size-cell: 2.7rem;
+    --font-size-message: 1.3rem;
+    --font-size-btn: 1.1rem;
+    --font-size-emoji: 2.5rem;
 }
+
+body, h1, div, button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--color-bg-gradient);
+    font-family: var(--font-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+h1 {
+    font-family: var(--font-title);
+    font-size: var(--font-size-title);
+    margin-top: 40px;
+    margin-bottom: 10px;
+    color: var(--color-green-dark);
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px var(--color-shadow-title);
+}
+
 #game-board {
     display: grid;
-    grid-template-columns: repeat(3, 80px);
-    grid-template-rows: repeat(3, 80px);
-    gap: 5px;
-    justify-content: center;
-    margin: 30px auto;
+    grid-template-columns: repeat(3, var(--cell-size));
+    grid-template-rows: repeat(3, var(--cell-size));
+    gap: var(--gap-board);
+    margin: 30px 0 20px 0;
+    background: var(--color-board-gradient);
+    border-radius: var(--radius-board);
+    box-shadow: 0 8px 32px var(--color-shadow-board);
+    padding: var(--padding-board);
 }
+
 .cell {
-    background: #fff;
-    border: 2px solid #333;
-    font-size: 2.5rem;
+    background: var(--color-cell-gradient);
+    border: 3px solid var(--color-green-dark);
+    border-radius: var(--radius-cell);
+    font-size: var(--font-size-cell);
+    font-family: var(--font-title);
+    color: var(--color-green);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    height: 80px;
-    width: 80px;
-    transition: background 0.2s;
+    height: var(--cell-size);
+    width: var(--cell-size);
+    box-shadow: 0 2px 8px var(--color-shadow);
+    transition: background 0.2s, transform 0.1s;
+    user-select: none;
 }
+
 .cell:hover {
-    background: #e0e0e0;
+    background: var(--color-cell-hover);
+    transform: scale(1.07);
 }
+
+.cell:active {
+    background: var(--color-green-light);
+}
+
+.cell::after {
+    content: attr(data-emoji);
+    font-size: var(--font-size-emoji);
+    line-height: 1;
+}
+
 #message {
-    font-size: 1.2rem;
-    margin: 20px;
+    font-size: var(--font-size-message);
+    margin: 18px 0 10px 0;
+    color: var(--color-green);
+    font-family: var(--font-main);
+    min-height: 32px;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 4px var(--color-shadow-message);
 }
+
 #restart-btn {
-    padding: 10px 20px;
-    font-size: 1rem;
+    padding: 12px 32px;
+    font-size: var(--font-size-btn);
+    font-family: var(--font-title);
+    background: linear-gradient(90deg, #a8ffeb 0%, #e0ffb3 100%);
+    color: var(--color-green-dark);
+    border: none;
+    border-radius: var(--radius-btn);
+    box-shadow: 0 2px 8px var(--color-shadow);
     cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+#restart-btn:hover {
+    background: linear-gradient(90deg, #e0ffb3 0%, #a8ffeb 100%);
+    transform: scale(1.05);
 }

@@ -305,14 +305,6 @@ const LogicModule = (function () {
     };
 })();
 
-const humanPlayer = PlayerModule.createPLayer('Human', 'O', 0);
-const machinePlayer = PlayerModule.createPLayer('Machine', 'X', 0);
-humanPlayer.logPlayer();
-machinePlayer.logPlayer();
-
-const myBoard = BoardModule.createBoard();
-myBoard.logBoard(); 
-
 const UIModule = (function () {
     const boardDiv = document.getElementById('game-board');
     const messageDiv = document.getElementById('message');
@@ -390,6 +382,14 @@ const UIModule = (function () {
         renderBoard
     };
 })();
+
+const humanPlayer = PlayerModule.createPLayer('Human', 'O', 0);
+const machinePlayer = PlayerModule.createPLayer('Machine', 'X', 0);
+humanPlayer.logPlayer();
+machinePlayer.logPlayer();
+
+const myBoard = BoardModule.createBoard();
+myBoard.logBoard(); 
 
 UIModule.renderBoard(myBoard);
 document.getElementById('message').textContent = 'Your turn. Click on a cell.';

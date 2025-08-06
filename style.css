@@ -94,6 +94,7 @@ h1 {
 }
 
 .cell::after {
+    /*esto significa que despues del contenido de la celda, el navegador mostrara el valor del atributo 'data-emoji' que establecimos en el javascript*/
     content: attr(data-emoji);
     font-size: var(--font-size-emoji);
     line-height: 1;

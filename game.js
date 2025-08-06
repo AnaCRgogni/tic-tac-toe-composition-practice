@@ -292,6 +292,7 @@ const LogicModule = (function () {
                 }
             }
         }
+
         if (isDraw) {
             return 'draw';
         }
@@ -316,10 +317,13 @@ const UIModule = (function () {
             for (let j = 0; j < 3; j++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
+                //Esto se asigna para poder recuperarlo luego con e.target.dataset.row
                 cell.dataset.row = i;
                 cell.dataset.col = j;
                 cell.textContent = ''; // Limpia texto
                 if (board.matrix[i][j] === 'O') {
+                    //data-emoji es el nombre del attributo personalizado que le estamos dando a la celda
+                    //en el CSS se usa en content: attr(data-emoji);
                     cell.setAttribute('data-emoji', '🟢');
                 } else if (board.matrix[i][j] === 'X') {
                     cell.setAttribute('data-emoji', '🍋');
@@ -335,6 +339,7 @@ const UIModule = (function () {
     function onCellClick(e) {
         const row = parseInt(e.target.dataset.row);
         const col = parseInt(e.target.dataset.col);
+        //ignora el click si la celda no esta vacia
         if (myBoard.matrix[row][col] !== ' ') return;
 
         myBoard.matrix[row][col] = humanPlayer.markerType;
@@ -356,6 +361,7 @@ const UIModule = (function () {
     }
 
     function endGame(winner) {
+        //checkwinner() puede devolver draw, human o machine
         if (winner === 'draw') {
             messageDiv.textContent = "It's a draw!";
         } else {
